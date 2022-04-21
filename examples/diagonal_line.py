@@ -3,7 +3,7 @@ def loop(elapsed_time, screen, mouse_x, mouse_y, mouse_is_pressed, mouse_went_do
     y = 0
 
     v_x = 1
-    v_y = 1
+    v_y = 2
 
     red = 255
     green = 0

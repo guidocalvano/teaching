@@ -12,6 +12,8 @@ class Particle:
 
     def update(self, screen):
 
+        self.v_y = self.v_y - .01
+
         self.x += self.v_x
         self.y += self.v_y
 
@@ -38,7 +40,7 @@ for i in range(100):
 
 def loop(elapsed_time, screen, mouse_x, mouse_y, mouse_is_pressed, mouse_went_down, mouse_went_up):
     global particles
-    clear_screen(screen)
+
 
     for particle in particles:
         particle.update(screen)

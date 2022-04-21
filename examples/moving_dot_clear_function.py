@@ -22,7 +22,6 @@ def loop(elapsed_time, screen, mouse_x, mouse_y, mouse_is_pressed, mouse_went_do
 
     clear_screen(screen)
 
-
     x += v_x
     y += v_y
 

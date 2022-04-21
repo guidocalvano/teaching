@@ -2,7 +2,7 @@
 x = 0
 y = 0
 
-v_x = 1
+v_x = 0
 v_y = 1
 
 red = 255
@@ -16,9 +16,9 @@ def loop(elapsed_time, screen, mouse_x, mouse_y, mouse_is_pressed, mouse_went_do
     x += v_x
     y += v_y
 
-    screen[x, y, 0] = red
-    screen[x, y, 1] = green
-    screen[x, y, 2] = blue
+    screen[int(x), y, 0] = red
+    screen[int(x), y, 1] = green
+    screen[int(x), y, 2] = blue
 
     return screen
 

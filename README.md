@@ -6,6 +6,7 @@
 4. horizontal line
 5. diagonal line
 6. growing diagonal line
+
 7. square
 8. moving dot
 9. moving dot clear function
@@ -13,3 +14,9 @@
 11. many particles
 12. firework
 13. new year
+
+14. diagonal_line_with_arrows
+15. line_function_gap
+16. line_function
+17. line_triangle
+18. cube3D
