@@ -20,3 +20,15 @@
 16. line_function
 17. line_triangle
 18. cube3D
+19. cube3D_from_coordinate_arrows
+20. cube3D_arrows_operator_overloading
+21. cube3D_rotating
+22. cube3D_coordinate_system
+23. cube3D_geometry
+24. cube3D_numpy
+
+25. tetraeder
+26. tetraeder_centered
+27. tetraeder_surfaces_with_problems
+28. tetraeder_surfaces_with_colors_and_problems
+29. tetraeder_surfaces_with_z_buffering

@@ -45,6 +45,13 @@ class Arrow3D:
 
         return Arrow2D(screen_x * 240 + 320, screen_y * 240 + 240)
 
+    def length(self):
+        #@TODO explain why this works
+
+        l = math.sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
+
+        return l
+
     def add(self, other):
         total = Arrow3D(0, 0, 0)
 
@@ -72,6 +79,58 @@ class Arrow3D:
     def __neg__(self):
         return Arrow3D(-self.x, -self.y, -self.z)
 
+class CoordinateSystem:
+
+    def __init__(self, position, x_axis, y_axis, z_axis):
+        self.position = position
+        self.x_axis = x_axis
+        self.y_axis = y_axis
+        self.z_axis = z_axis
+
+    def transform(self, arrow):
+        return self.position + self.x_axis * arrow.x + self.y_axis * arrow.y + self.z_axis * arrow.z
+
+class Geometry:
+
+    def __init__(self, points, lines):
+        self.points = points
+        self.lines = lines
+
+    @staticmethod
+    def cube():
+        right = Arrow3D(1, 0, 0)
+        top   = Arrow3D(0, 1, 0)
+        back  = Arrow3D(0, 0, 1)
+
+        points = []
+        lines = []
+
+        for x in [-right, right]:
+            for y in [-top, top]:
+                for z in [-back, back]:
+                    points.append(x + y + z)
+
+        for first in range(len(points)):
+            for second in range(first + 1, len(points)):
+                if (points[first] - points[second]).length() == 2:
+                    lines.append([first, second])
+
+        return Geometry(points, lines)
+
+    def outside_coordinate_system(self, coordinate_system):
+        transformed_points = []
+
+        for point in self.points:
+            transformed_points.append(coordinate_system.transform(point))
+
+        return Geometry(transformed_points, self.lines.copy())
+
+    def draw(self, screen, color):
+        for l in self.lines:
+            start = self.points[l[0]]
+            finish = self.points[l[1]]
+
+            line(screen, start.project_on_screen(), finish.project_on_screen(), color)
 
 def line(screen, start, finish, color):
     from_start_to_finish = finish.add(start.scale(-1))
@@ -101,38 +160,6 @@ def line(screen, start, finish, color):
         for c in range(len(color)):
             screen[screen_x, screen_y, c] = color[c]
 
-def line_cube(screen, position, to_right, to_top, to_back):
-
-
-    left_bottom_front  = (position  - to_right - to_top - to_back).project_on_screen()
-
-    left_bottom_back   = (position - to_right - to_top + to_back).project_on_screen()
-    left_top_front     = (position - to_right + to_top - to_back).project_on_screen()
-    right_bottom_front = (position + to_right - to_top - to_back).project_on_screen()
-
-    left_top_back      = (position - to_right + to_top + to_back).project_on_screen()
-    right_bottom_back  = (position + to_right - to_top + to_back).project_on_screen()
-    right_top_front    = (position + to_right + to_top - to_back).project_on_screen()
-
-    right_top_back     = (position + to_right + to_top + to_back).project_on_screen()
-
-    line(screen, left_top_front, right_top_front, [255, 0, 0])
-    line(screen, left_top_front, left_bottom_front, [255, 0, 0])
-    line(screen, left_top_front, left_top_back, [255, 0, 0])
-    line(screen, right_top_front, right_top_back, [255, 0, 0])
-
-    line(screen, right_top_front, right_bottom_front, [255, 0, 0])
-    line(screen, left_bottom_front, left_bottom_back, [255, 0, 0])
-
-    line(screen, left_bottom_front, right_bottom_front, [255, 0, 0])
-    line(screen, right_bottom_front, right_bottom_back, [255, 0, 0])
-
-    line(screen, left_top_back, right_top_back, [255, 0, 0])
-    line(screen, left_top_back, left_bottom_back, [255, 0, 0])
-    line(screen, right_bottom_back, right_top_back, [255, 0, 0])
-    line(screen, left_bottom_back, right_bottom_back, [255, 0, 0])
-
-
 def clear_screen(screen):
     for i in range(640):
         for j in range(480):
@@ -149,10 +176,16 @@ def loop(elapsed_time, screen, mouse_x, mouse_y, mouse_is_pressed, mouse_went_do
         angle -= math.pi * 2
 
     clear_screen(screen)
-    line_cube(screen, Arrow3D(0, 0, 50),
-              Arrow3D(20 * math.cos(angle), 0, 20 * math.sin(angle)),
-              Arrow3D(0, 20, 0),
-              Arrow3D(20 * math.cos(angle + .5 * math.pi), 0, 20 * math.sin(angle + .5 * math.pi)))
+    position = Arrow3D(0, 0, 50)
+    x_axis = Arrow3D(20 * math.cos(angle), 0, 20 * math.sin(angle))
+    y_axis = Arrow3D(0, 20, 0)
+    z_axis = Arrow3D(20 * math.cos(angle + .5 * math.pi), 0, 20 * math.sin(angle + .5 * math.pi))
 
+    coordinate_system = CoordinateSystem(position, x_axis, y_axis, z_axis)
+    cube = Geometry.cube()
+
+    transformed_cube = cube.outside_coordinate_system(coordinate_system)
+
+    transformed_cube.draw(screen, [0, 0, 255])
     return screen
 

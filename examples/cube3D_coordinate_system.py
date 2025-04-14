@@ -31,6 +31,7 @@ class Arrow2D:
 
         return l
 
+
 class Arrow3D:
 
     def __init__(self, x, y, z):
@@ -53,8 +54,35 @@ class Arrow3D:
 
         return total
 
+    def __add__(self, other):
+        return self.add(other)
+
+    def __sub__(self, other):
+        return self.add(-other)
+
     def scale(self, s):
         return Arrow3D(self.x * s, self.y * s, self.z * s)
+
+    def __mul__(self, s):
+        return self.scale(s)
+
+    def __rmul__(self, s):
+        return self.scale(s)
+
+    def __neg__(self):
+        return Arrow3D(-self.x, -self.y, -self.z)
+
+class CoordinateSystem:
+
+    def __init__(self, position, x_axis, y_axis, z_axis):
+        self.position = position
+        self.x_axis = x_axis
+        self.y_axis = y_axis
+        self.z_axis = z_axis
+
+    def transform(self, arrow):
+        return self.position + self.x_axis * arrow.x + self.y_axis * arrow.y + self.z_axis * arrow.z
+
 
 def line(screen, start, finish, color):
     from_start_to_finish = finish.add(start.scale(-1))
@@ -84,20 +112,21 @@ def line(screen, start, finish, color):
         for c in range(len(color)):
             screen[screen_x, screen_y, c] = color[c]
 
-def line_cube(screen, position, to_right, to_top, to_back):
+def line_cube(screen, coordinate_system):
 
 
-    left_bottom_front = position.add(to_right.scale(-1)).add(to_top.scale(-1)).add(to_back.scale(-1)).project_on_screen()
+    left_bottom_front  = coordinate_system.transform(Arrow3D(-1, -1, -1)).project_on_screen()
 
-    left_bottom_back = position.add(to_right.scale(-1)).add(to_top.scale(-1)).add(to_back.scale(1)).project_on_screen()
-    left_top_front = position.add(to_right.scale(-1)).add(to_top.scale(1)).add(to_back.scale(-1)).project_on_screen()
-    right_bottom_front = position.add(to_right.scale(1)).add(to_top.scale(-1)).add(to_back.scale(-1)).project_on_screen()
+    left_bottom_back   = coordinate_system.transform(Arrow3D(-1, -1,  1)).project_on_screen()
+    left_top_front     = coordinate_system.transform(Arrow3D(-1,  1, -1)).project_on_screen()
+    right_bottom_front = coordinate_system.transform(Arrow3D( 1, -1, -1)).project_on_screen()
 
-    left_top_back = position.add(to_right.scale(-1)).add(to_top.scale(1)).add(to_back.scale(1)).project_on_screen()
-    right_bottom_back = position.add(to_right.scale(1)).add(to_top.scale(-1)).add(to_back.scale(1)).project_on_screen()
-    right_top_front = position.add(to_right.scale(1)).add(to_top.scale(1)).add(to_back.scale(-1)).project_on_screen()
+    left_top_back      = coordinate_system.transform(Arrow3D(-1,  1,  1)).project_on_screen()
+    right_bottom_back  = coordinate_system.transform(Arrow3D( 1, -1,  1)).project_on_screen()
+    right_top_front    = coordinate_system.transform(Arrow3D( 1,  1, -1)).project_on_screen()
 
-    right_top_back = position.add(to_right.scale(1)).add(to_top.scale(1)).add(to_back.scale(1)).project_on_screen()
+    right_top_back     = coordinate_system.transform(Arrow3D( 1,  1,  1)).project_on_screen()
+
 
     line(screen, left_top_front, right_top_front, [255, 0, 0])
     line(screen, left_top_front, left_bottom_front, [255, 0, 0])
@@ -123,14 +152,23 @@ def clear_screen(screen):
                 screen[i, j, color] = 0
 
 
-v = 0
+angle = 0
 def loop(elapsed_time, screen, mouse_x, mouse_y, mouse_is_pressed, mouse_went_down, mouse_went_up):
-    global v
-    v += .2
+    global angle
+    angle += .2
+
+    while angle > math.pi * 2:
+        angle -= math.pi * 2
 
     clear_screen(screen)
-    line_cube(screen, Arrow3D(0 + v, 0, 50), Arrow3D(20 , 0, 0), Arrow3D(0, 20, 0), Arrow3D(0, 0, 20))
+    position = Arrow3D(0, 0, 50)
+    x_axis = Arrow3D(20 * math.cos(angle), 0, 20 * math.sin(angle))
+    y_axis = Arrow3D(0, 20, 0)
+    z_axis = Arrow3D(20 * math.cos(angle + .5 * math.pi), 0, 20 * math.sin(angle + .5 * math.pi))
+
+    coordinate_system = CoordinateSystem(position, x_axis, y_axis, z_axis)
+
+    line_cube(screen, coordinate_system)
 
     return screen
-
 
